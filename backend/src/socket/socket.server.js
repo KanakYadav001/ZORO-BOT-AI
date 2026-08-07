@@ -12,7 +12,12 @@ const {
 } = require("../service/pinecone.service");
 
 function setupSocketServer(server) {
-  const io = socketIo(server);
+  const io = socketIo(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
 
   // Verify chatId belongs to the user
   async function verifyChatOwnership(userId, chatId) {
