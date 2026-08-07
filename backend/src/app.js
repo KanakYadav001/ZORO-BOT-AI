@@ -20,6 +20,11 @@ connect().then(() => {
 })
 
 
+
+app.get('/', (req, res) => {
+    res.send('Welcome to Zoro-AI Backend');
+});
+
 app.use("/api/auth",authRouter);
 app.use("/api/chat",chatRouter);
 
