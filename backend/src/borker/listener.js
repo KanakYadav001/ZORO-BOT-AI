@@ -1,11 +1,10 @@
-const {consumeFromQueue} = require('./borker');
-const {sendEmail} = require('../service/mail.service');
+const { consumeFromQueue } = require("./borker");
+const { sendEmail } = require("../service/mail.service");
 
-module.exports =  function () {
-    
-    consumeFromQueue('NEW_USER_REGISTER', async (data) => {
-            const parsedData = JSON.parse(data);
-   const htmlContent = `
+module.exports = function () {
+  consumeFromQueue("NEW_USER_REGISTER", async (data) => {
+    const parsedData = JSON.parse(data);
+    const htmlContent = `
 <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
   <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
     
@@ -81,10 +80,12 @@ If you need any assistance, feel free to contact our support team.
 Best regards,
 Team ZORO-AI
 `;
-    sendEmail(parsedData.email, `Welcome ${parsedData.FullName.firstName} ${parsedData.FullName.lastName} !`, textContent, htmlContent);
 
-
-
-
-})
-}
+    await sendEmail(
+      parsedData.email,
+      `Welcome ${parsedData.FullName.firstName} ${parsedData.FullName.lastName} !`,
+      textContent,
+      htmlContent,
+    );
+  });
+};
