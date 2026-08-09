@@ -30,6 +30,7 @@ async function register(req, res) {
       password: hashedPassword,
     });
 
+ 
     await uploadToQueue("NEW_USER_REGISTER", {
       id: user._id,
       email: user.email,
@@ -85,12 +86,14 @@ async function login(req, res) {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    sendEmail(
+   await sendEmail(
       email,
       "Login Alert from ZORO-AI",
       "We noticed a login to your account. If this was you, you can safely ignore this email. If you did not log in, please secure your account immediately.",
       "<h1>Login Alert from ZORO-AI</h1><p>We noticed a login to your account. If this was you, you can safely ignore this email. If you did not log in, please secure your account immediately.</p>",
-    );
+    ).catch((error) => {
+      console.error("Error sending login alert email:", error.message);
+    });
 
     const token = jwt.sign(
       { id: isUserExits._id, role: isUserExits.role },

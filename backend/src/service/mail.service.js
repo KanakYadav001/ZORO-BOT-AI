@@ -1,23 +1,28 @@
-require('dotenv').config();
-const nodemailer = require('nodemailer');
+require("dotenv").config();
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    type: 'OAuth2',
-    user: process.env.EMAIL_USER,
-    clientId: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    refreshToken: process.env.REFRESH_TOKEN,
-  },
+  service: "gmail",
+  auth: process.env.EMAIL_PASS
+    ? {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      }
+    : {
+        type: "OAuth2",
+        user: process.env.EMAIL_USER,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
+      },
 });
 
 // Verify the connection configuration
 transporter.verify((error, success) => {
   if (error) {
-    console.error('Error connecting to email server:', error);
+    console.error("Error connecting to email server:", error);
   } else {
-    console.log('Email server is ready to send messages');
+    console.log("Email server is ready to send messages");
   }
 });
 
@@ -25,17 +30,18 @@ transporter.verify((error, success) => {
 const sendEmail = async (to, subject, text, html) => {
   try {
     const info = await transporter.sendMail({
-      from: `"ZORO-AI" <${process.env.EMAIL_USER}>`, 
-      to, 
-      subject, 
-      text, 
-      html, 
+      from: `"ZORO-AI" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      text,
+      html,
     });
 
-    console.log('Message sent: %s', info.messageId);
+    console.log("Message sent: %s", info.messageId);
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error?.message || error);
+    throw error;
   }
 };
 
-module.exports = {sendEmail};
+module.exports = { sendEmail };

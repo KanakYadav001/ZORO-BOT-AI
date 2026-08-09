@@ -1,10 +1,23 @@
 const { consumeFromQueue } = require("./borker");
 const { sendEmail } = require("../service/mail.service");
 
-module.exports = function () {
-  consumeFromQueue("NEW_USER_REGISTER", async (data) => {
-    const parsedData = JSON.parse(data);
-    const htmlContent = `
+module.exports = async function () {
+  const queueName = process.env.REGISTER_QUEUE || "NEW_USER_REGISTER";
+  await consumeFromQueue(queueName, async (data) => {
+    try {
+      const parsedData = typeof data === "string" ? JSON.parse(data) : data;
+      const email = parsedData?.email;
+
+      if (!email) {
+        console.error("Invalid registration message skipped (missing email):", data);
+        return;
+      }
+
+      const firstName = parsedData?.FullName?.firstName || parsedData?.name?.firstName || "User";
+      const lastName = parsedData?.FullName?.lastName || parsedData?.name?.lastName || "";
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      const htmlContent = `
 <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
   <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
     
@@ -13,7 +26,7 @@ module.exports = function () {
     </div>
 
     <div style="padding: 30px; color: #333;">
-      <h2 style="margin-top: 0;">Hello ${parsedData.FullName.firstName} ${parsedData.FullName.lastName},</h2>
+      <h2 style="margin-top: 0;">Hello ${fullName},</h2>
 
       <p>
         We’re excited to welcome you to <strong>ZORO-AI</strong>! 🎉  
@@ -35,7 +48,7 @@ module.exports = function () {
       </p>
 
       <div style="text-align: center; margin: 30px 0;">
-        <a href="#" style="background: #2563eb; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        <a href="https://zoro-bot-ai.vercel.app/" style="background: #2563eb; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold;">
           Get Started
         </a>
       </div>
@@ -61,8 +74,8 @@ module.exports = function () {
   </div>
 </div>
 `;
-    const textContent = `
-Hello ${parsedData.FullName.firstName} ${parsedData.FullName.lastName},
+      const textContent = `
+Hello ${fullName},
 
 Welcome to ZORO-AI!
 
@@ -81,11 +94,16 @@ Best regards,
 Team ZORO-AI
 `;
 
-    await sendEmail(
-      parsedData.email,
-      `Welcome ${parsedData.FullName.firstName} ${parsedData.FullName.lastName} !`,
-      textContent,
-      htmlContent,
-    );
+      await sendEmail(
+        email,
+        `Welcome ${fullName}!`,
+        textContent,
+        htmlContent,
+      );
+      console.log(`Registration email sent successfully to ${email}`);
+    } catch (error) {
+      console.error(`Error processing registration email message:`, error?.message || error);
+      throw error;
+    }
   });
 };
