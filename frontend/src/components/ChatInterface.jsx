@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+const socketUrl = import.meta.env.VITE_SOCKET_URL
+
+if(!socketUrl) {
+  throw new Error('VITE_BACKEND_URL is not defined in the environment variables');
+}
 import { 
   Send, Bot, User, Sparkles, Copy, Check, Code, Zap, Menu, 
   ThumbsUp, ThumbsDown, RotateCcw, Paperclip, ArrowUp, Moon, Sun 
@@ -39,8 +44,6 @@ export default function ChatInterface({
   // Socket setup
   useEffect(() => {
     if (!token) return;
-
-    const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const socket = io(socketUrl, {
       query: { token },
       transports: ['websocket', 'polling']

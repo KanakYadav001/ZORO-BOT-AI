@@ -86,6 +86,7 @@ async function login(req, res) {
    
 
  sendEmail(email, 'Login Alert from ZORO-AI', 'We noticed a login to your account. If this was you, you can safely ignore this email. If you did not log in, please secure your account immediately.', '<h1>Login Alert from ZORO-AI</h1><p>We noticed a login to your account. If this was you, you can safely ignore this email. If you did not log in, please secure your account immediately.</p>');
+ 
         const token = jwt.sign({ id: isUserExits._id , role: isUserExits.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
         res.cookie('token', token, { 
