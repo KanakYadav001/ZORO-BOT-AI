@@ -47,7 +47,7 @@ async function register(req, res) {
 
 
 
-    RegisterUserEmail({ email, FullName: { firstName, lastName } });
+   await  RegisterUserEmail({ email, FullName: { firstName, lastName } });
 
     res
       .status(201)
@@ -97,7 +97,7 @@ async function login(req, res) {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    LoginUserEmail({ email });
+    await LoginUserEmail({ email });
 
     res.status(200).json({ message: "User login successful", token });
   } catch (error) {
