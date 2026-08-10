@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/user.model");
 const bcrypt = require("bcryptjs");
+const {RegisterUserEmail  , LoginUserEmail}= require("../borker/listener");
 const { sendEmail } = require("../service/mail.service");
-const { uploadToQueue } = require("../borker/borker");
 
 async function register(req, res) {
   try {
@@ -31,14 +31,6 @@ async function register(req, res) {
     });
 
  
-    await uploadToQueue("NEW_USER_REGISTER", {
-      id: user._id,
-      email: user.email,
-      FullName: {
-        firstName: user.name.firstName,
-        lastName: user.name.lastName,
-      },
-    });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -52,6 +44,10 @@ async function register(req, res) {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+
+
+   RegisterUserEmail({ email, FullName: { firstName, lastName } });
 
     res
       .status(201)
@@ -86,14 +82,7 @@ async function login(req, res) {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-   await sendEmail(
-      email,
-      "Login Alert from ZORO-AI",
-      "We noticed a login to your account. If this was you, you can safely ignore this email. If you did not log in, please secure your account immediately.",
-      "<h1>Login Alert from ZORO-AI</h1><p>We noticed a login to your account. If this was you, you can safely ignore this email. If you did not log in, please secure your account immediately.</p>",
-    ).catch((error) => {
-      console.error("Error sending login alert email:", error.message);
-    });
+    
 
     const token = jwt.sign(
       { id: isUserExits._id, role: isUserExits.role },
@@ -107,6 +96,8 @@ async function login(req, res) {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    LoginUserEmail({ email });
 
     res.status(200).json({ message: "User login successful", token });
   } catch (error) {
