@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/user.model");
 const bcrypt = require("bcryptjs");
-const {RegisterUserEmail  , LoginUserEmail}= require("../borker/listener");
+const { RegisterUserEmail, LoginUserEmail } = require("../borker/listener");
 const { sendEmail } = require("../service/mail.service");
 
 async function register(req, res) {
@@ -30,7 +30,7 @@ async function register(req, res) {
       password: hashedPassword,
     });
 
- 
+
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -47,7 +47,7 @@ async function register(req, res) {
 
 
 
-   RegisterUserEmail({ email, FullName: { firstName, lastName } });
+    RegisterUserEmail({ email, FullName: { firstName, lastName } });
 
     res
       .status(201)
@@ -82,7 +82,7 @@ async function login(req, res) {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    
+
 
     const token = jwt.sign(
       { id: isUserExits._id, role: isUserExits.role },

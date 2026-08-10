@@ -115,7 +115,7 @@ async function LoginUserEmail(data) {
     if (!email) {
       console.error(
         "Invalid login message skipped (missing email):",
-        data,
+        data
       );
       return;
     }
@@ -137,28 +137,30 @@ async function LoginUserEmail(data) {
           padding: 0;
           background-color: #f1f5f9;
           font-family: Arial, Helvetica, sans-serif;
-          color: #333333;
+          color: #1e293b;
         ">
 
           <div style="
             max-width: 600px;
             margin: 30px auto;
-            background: #ffffff;
-            border-radius: 10px;
+            background-color: #ffffff;
             overflow: hidden;
+            border-radius: 10px;
             box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08);
           ">
 
             <!-- Header -->
             <div style="
-              background: #0f172a;
-              color: #ffffff;
+              background-color: #0f172a;
               padding: 24px 20px;
               text-align: center;
+              color: #ffffff;
             ">
+
               <h1 style="
                 margin: 0;
                 font-size: 26px;
+                line-height: 1.2;
                 font-weight: 700;
               ">
                 ZORO-AI
@@ -166,64 +168,78 @@ async function LoginUserEmail(data) {
 
               <p style="
                 margin: 8px 0 0;
-                color: #cbd5e1;
                 font-size: 14px;
+                line-height: 1.5;
+                color: #cbd5e1;
               ">
                 Account Security
               </p>
+
             </div>
 
             <!-- Content -->
-            <div style="padding: 35px 30px;">
+            <div style="
+              padding: 35px 30px;
+            ">
 
+              <!-- Icon -->
               <div style="
-                text-align: center;
                 margin-bottom: 25px;
+                text-align: center;
               ">
+
                 <div style="
                   display: inline-block;
-                  background: #eff6ff;
-                  border-radius: 50%;
                   width: 60px;
                   height: 60px;
-                  line-height: 60px;
+                  background-color: #eff6ff;
+                  border-radius: 50%;
                   font-size: 28px;
+                  line-height: 60px;
+                  text-align: center;
                 ">
                   🔐
                 </div>
+
               </div>
 
+              <!-- Title -->
               <h2 style="
                 margin: 0 0 15px;
                 text-align: center;
                 color: #0f172a;
                 font-size: 23px;
+                line-height: 1.3;
+                font-weight: 700;
               ">
                 New Login Detected
               </h2>
 
               <p style="
+                margin: 0 0 20px;
                 font-size: 15px;
                 line-height: 1.7;
-                margin: 0 0 20px;
+                color: #334155;
               ">
                 We noticed a recent login to your
-                <strong>ZORO-AI</strong> account.
+                <strong style="color: #0f172a;">ZORO-AI</strong>
+                account.
               </p>
 
               <!-- Login Confirmation -->
               <div style="
-                background: #f8fafc;
+                margin: 25px 0;
+                padding: 20px;
+                background-color: #f8fafc;
                 border: 1px solid #e2e8f0;
                 border-radius: 8px;
-                padding: 20px;
-                margin: 25px 0;
               ">
 
                 <p style="
                   margin: 0 0 8px;
                   font-size: 15px;
-                  font-weight: bold;
+                  line-height: 1.5;
+                  font-weight: 700;
                   color: #0f172a;
                 ">
                   Was this you?
@@ -243,16 +259,17 @@ async function LoginUserEmail(data) {
 
               <!-- Security Warning -->
               <div style="
-                background: #fff7ed;
-                border-left: 4px solid #f97316;
-                padding: 15px 18px;
                 margin: 25px 0;
+                padding: 15px 18px;
+                background-color: #fff7ed;
+                border-left: 4px solid #f97316;
               ">
 
                 <p style="
                   margin: 0 0 6px;
                   font-size: 14px;
-                  font-weight: bold;
+                  line-height: 1.5;
+                  font-weight: 700;
                   color: #9a3412;
                 ">
                   Didn't recognize this login?
@@ -272,40 +289,46 @@ async function LoginUserEmail(data) {
 
               <!-- Button -->
               <div style="
-                text-align: center;
                 margin: 30px 0;
+                text-align: center;
               ">
+
                 <a
                   href="https://zoro-bot-ai.vercel.app/"
                   style="
                     display: inline-block;
-                    background: #2563eb;
-                    color: #ffffff;
                     padding: 13px 28px;
+                    background-color: #2563eb;
+                    color: #ffffff;
                     text-decoration: none;
                     border-radius: 6px;
                     font-size: 14px;
-                    font-weight: bold;
+                    line-height: 1.4;
+                    font-weight: 700;
                   "
                 >
                   Open ZORO-AI
                 </a>
+
               </div>
 
+              <!-- Security Note -->
               <p style="
+                margin: 25px 0 0;
                 font-size: 13px;
                 line-height: 1.6;
                 color: #64748b;
-                margin-top: 25px;
               ">
                 For your security, never share your password or
                 authentication codes with anyone.
               </p>
 
+              <!-- Signature -->
               <p style="
-                margin-top: 30px;
+                margin: 30px 0 0;
                 font-size: 14px;
                 line-height: 1.6;
+                color: #334155;
               ">
                 Best regards,<br />
                 <strong>Team ZORO-AI</strong>
@@ -315,19 +338,27 @@ async function LoginUserEmail(data) {
 
             <!-- Footer -->
             <div style="
-              background: #f1f5f9;
-              text-align: center;
+              background-color: #f1f5f9;
               padding: 18px 15px;
+              text-align: center;
               font-size: 12px;
+              line-height: 1.5;
               color: #64748b;
             ">
-              <p style="margin: 0 0 5px;">
+
+              <p style="
+                margin: 0 0 5px;
+              ">
                 This is an automated security notification from ZORO-AI.
               </p>
 
-              <p style="margin: 0;">
-                © ${new Date().getFullYear()} ZORO-AI. All rights reserved.
+              <p style="
+                margin: 0;
+              ">
+                © ${new Date().getFullYear()} ZORO-AI.
+                All rights reserved.
               </p>
+
             </div>
 
           </div>
@@ -345,15 +376,19 @@ New Login Detected
 We noticed a recent login to your ZORO-AI account.
 
 Was this you?
+
 If you recently logged into your account, you can safely ignore this email.
 
 Didn't recognize this login?
-Please secure your account immediately by changing your password and reviewing your account activity.
+
+Please secure your account immediately by changing your password
+and reviewing your account activity.
 
 Open ZORO-AI:
 https://zoro-bot-ai.vercel.app/
 
-For your security, never share your password or authentication codes with anyone.
+For your security, never share your password or authentication
+codes with anyone.
 
 Best regards,
 Team ZORO-AI
@@ -365,14 +400,14 @@ Team ZORO-AI
       email,
       "New Login Detected — ZORO-AI",
       textContent,
-      htmlContent,
+      htmlContent
     );
 
     console.log(`Login alert email sent successfully to ${email}`);
   } catch (error) {
     console.error(
       "Error processing login alert email message:",
-      error?.message || error,
+      error?.message || error
     );
 
     throw error;
