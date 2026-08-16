@@ -4,7 +4,6 @@ const messageModel = require("../models/messages.model");
 const chatModel = require("../models/chat.model");
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
-const { request } = require("../app");
 const { CreateEmbedding } = require("../service/ai.service");
 const {
   uploadToPinecone,
@@ -15,8 +14,8 @@ function setupSocketServer(server) {
   const io = socketIo(server, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"]
-    }
+      methods: ["GET", "POST"],
+    },
   });
 
   // Verify chatId belongs to the user
@@ -58,6 +57,10 @@ function setupSocketServer(server) {
 
     socket.on("message", async (msg) => {
       try {
+        if (!msg?.chatId || !msg?.data?.trim()) {
+          return socket.emit("response", "Please send a valid message.");
+        }
+
         // Security: Verify chatId belongs to the current user
         const isChatOwner = await verifyChatOwnership(socket.user, msg.chatId);
         if (!isChatOwner) {
@@ -70,66 +73,83 @@ function setupSocketServer(server) {
           );
         }
 
-        const UserMessage = await messageModel.create({
+        // Start independent tasks in parallel to reduce end-to-end latency.
+        const userMessagePromise = messageModel.create({
           userId: socket.user,
           chatId: msg.chatId,
           content: msg.data,
           role: "user",
         });
 
-        // 1. Generate embedding for user message
-        const userMessageEmbedding = await CreateEmbedding(msg.data);
+        const userProfilePromise = userModel
+          .findById(socket.user)
+          .select("name email")
+          .lean();
 
-        // 2. Retrieve previous context from Pinecone BEFORE uploading current message
-        const previousContext = await getContextFromPinecone(
-          userMessageEmbedding,
-          socket.user,
-          msg.chatId,
-          5
+        const userMessageEmbeddingPromise = CreateEmbedding(msg.data);
+
+        // Build context as soon as embedding is ready.
+        const previousContextPromise = userMessageEmbeddingPromise.then(
+          (embedding) =>
+            embedding
+              ? getContextFromPinecone(embedding, socket.user, msg.chatId, 5)
+              : [],
         );
 
-        // 3. Upload User Message vector to Pinecone
-        if (userMessageEmbedding) {
-          await uploadToPinecone(
-            UserMessage.id,
-            userMessageEmbedding,
-            {
+        // Upload user vector in background as soon as message+embedding are both available.
+        Promise.all([userMessagePromise, userMessageEmbeddingPromise])
+          .then(([userMessage, userMessageEmbedding]) => {
+            if (!userMessageEmbedding) return null;
+            return uploadToPinecone(userMessage.id, userMessageEmbedding, {
               userId: socket.user,
               chatId: msg.chatId,
               role: "user",
               content: msg.data,
-            }
-          );
-        }
+            });
+          })
+          .catch((error) => {
+            console.error("Background user vector upload failed:", error);
+          });
 
-        // 4. Fetch user profile & Get response from Groq using context + User Profile
-        const userProfile = await userModel.findById(socket.user).select("name email");
-        const response = await getGroqChatCompletion(msg, previousContext, userProfile);
+        // Wait only for data required to generate the model response.
+        const [previousContext, userProfile] = await Promise.all([
+          previousContextPromise,
+          userProfilePromise,
+        ]);
 
+        // Get response from Groq using context + User Profile
+        const response = await getGroqChatCompletion(
+          msg,
+          previousContext,
+          userProfile,
+        );
+
+        // Respond to client immediately after model output is ready.
         socket.emit("response", response);
 
-        // 5. Save Model response to MongoDB
-        const ModelMessage = await messageModel.create({
+        // Persist assistant message + vector in background to keep response path fast.
+        const assistantMessagePromise = messageModel.create({
           userId: socket.user,
           chatId: msg.chatId,
           content: response,
           role: "assistant",
         });
 
-        // 6. Generate embedding & upload Model Message vector to Pinecone
-        const modelMessageEmbedding = await CreateEmbedding(response);
-        if (modelMessageEmbedding) {
-          await uploadToPinecone(
-            ModelMessage.id,
-            modelMessageEmbedding,
-            {
+        const assistantEmbeddingPromise = CreateEmbedding(response);
+
+        Promise.all([assistantMessagePromise, assistantEmbeddingPromise])
+          .then(([assistantMessage, assistantEmbedding]) => {
+            if (!assistantEmbedding) return null;
+            return uploadToPinecone(assistantMessage.id, assistantEmbedding, {
               userId: socket.user,
               chatId: msg.chatId,
               role: "assistant",
               content: response,
-            }
-          );
-        }
+            });
+          })
+          .catch((error) => {
+            console.error("Background assistant persistence failed:", error);
+          });
 
         console.log("Received message:", response);
       } catch (error) {
