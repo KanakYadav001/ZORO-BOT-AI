@@ -3,7 +3,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const authRouter = require("./routers/user.router");
 const chatRouter = require("./routers/chat.router");
-
+const ratelimit = require("./middleware/rateLimiter.middleware");
 
 const app = express();
 
@@ -15,6 +15,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use(ratelimit);
 
 
 
