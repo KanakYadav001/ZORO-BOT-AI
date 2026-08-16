@@ -112,6 +112,14 @@ function setupSocketServer(server) {
           role: "user",
         });
 
+        // Fetch recent sequential conversation history from MongoDB (Chronological order)
+        const recentHistoryPromise = messageModel
+          .find({ userId: socket.user, chatId: msg.chatId })
+          .sort({ createdAt: -1 })
+          .limit(8)
+          .lean()
+          .then((docs) => docs.reverse());
+
         const userProfilePromise = userModel
           .findById(socket.user)
           .select("name email")
@@ -126,7 +134,7 @@ function setupSocketServer(server) {
             )
           : Promise.resolve([]);
 
-        // Build context as soon as embedding is ready.
+        // Build Pinecone semantic RAG context as soon as embedding is ready.
         const previousContextPromise = userMessageEmbeddingPromise.then(
           (embedding) =>
             embedding
@@ -150,11 +158,23 @@ function setupSocketServer(server) {
           });
 
         // Wait only for data required to generate the model response.
-        const [previousContext, userProfile, webContext] = await Promise.all([
-          previousContextPromise,
-          userProfilePromise,
-          webContextPromise,
-        ]);
+        const [recentHistory, semanticContextRaw, userProfile, webContext] =
+          await Promise.all([
+            recentHistoryPromise,
+            previousContextPromise,
+            userProfilePromise,
+            webContextPromise,
+          ]);
+
+        // Deduplicate Pinecone memory hits against recent history to avoid redundant context
+        const recentContentSet = new Set(
+          (recentHistory || []).map((m) => m.content?.trim().toLowerCase()),
+        );
+
+        const semanticContext = (semanticContextRaw || []).filter((item) => {
+          const content = (item.metadata?.content || "").trim().toLowerCase();
+          return content && !recentContentSet.has(content);
+        });
 
         if (shouldUseWebSearch(msg.data)) {
           console.log(
@@ -162,10 +182,11 @@ function setupSocketServer(server) {
           );
         }
 
-        // Get response from Groq using memory context + profile + optional web context.
+        // Get response from Groq using Dual-Layer Context (Recent dialog + RAG Memory + Profile + Web)
         const response = await getGroqChatCompletion(
-          msg,
-          previousContext,
+          msg.data,
+          recentHistory,
+          semanticContext,
           userProfile,
           webContext,
         );

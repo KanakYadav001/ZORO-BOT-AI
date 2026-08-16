@@ -103,7 +103,6 @@ Team ZORO-AI
       `Error processing registration email message:`,
       error?.message || error,
     );
-    throw error;
   }
 }
 
@@ -409,8 +408,6 @@ Team ZORO-AI
       "Error processing login alert email message:",
       error?.message || error
     );
-
-    throw error;
   }
 }
 module.exports = { RegisterUserEmail, LoginUserEmail };
