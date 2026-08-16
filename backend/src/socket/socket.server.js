@@ -2,7 +2,6 @@ const socketIo = require("socket.io");
 const { getGroqChatCompletion } = require("../service/ai.service");
 const messageModel = require("../models/messages.model");
 const chatModel = require("../models/chat.model");
-const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const { CreateEmbedding } = require("../service/ai.service");
 const { searchWebContext } = require("../service/tavily.service");
@@ -120,11 +119,6 @@ function setupSocketServer(server) {
           .lean()
           .then((docs) => docs.reverse());
 
-        const userProfilePromise = userModel
-          .findById(socket.user)
-          .select("name email")
-          .lean();
-
         const userMessageEmbeddingPromise = CreateEmbedding(msg.data);
         const webContextPromise = shouldUseWebSearch(msg.data)
           ? withTimeout(
@@ -158,11 +152,10 @@ function setupSocketServer(server) {
           });
 
         // Wait only for data required to generate the model response.
-        const [recentHistory, semanticContextRaw, userProfile, webContext] =
+        const [recentHistory, semanticContextRaw, webContext] =
           await Promise.all([
             recentHistoryPromise,
             previousContextPromise,
-            userProfilePromise,
             webContextPromise,
           ]);
 
@@ -182,12 +175,11 @@ function setupSocketServer(server) {
           );
         }
 
-        // Get response from Groq using Dual-Layer Context (Recent dialog + RAG Memory + Profile + Web)
+        // Get response from Groq using Dual-Layer Context (Recent dialog + RAG Memory + Web)
         const response = await getGroqChatCompletion(
           msg.data,
           recentHistory,
           semanticContext,
-          userProfile,
           webContext,
         );
 

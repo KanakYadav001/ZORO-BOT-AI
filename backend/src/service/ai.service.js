@@ -47,31 +47,18 @@ async function getGroqChatCompletion(
   content,
   recentHistory = [],
   semanticContext = [],
-  userProfile = null,
   webContext = [],
 ) {
-  const userName = userProfile?.name
-    ? `${userProfile.name.firstName || ""} ${userProfile.name.lastName || ""}`.trim()
-    : "User";
-
   // Build structured XML system prompt (SDE Context Engineering)
   let systemPrompt = `<system_identity>
 You are ZORO AI, an advanced, intelligent, empathetic, and reliable AI assistant.
 Your goal is to provide accurate, well-structured, clear, and context-aware responses.
-
+remove ** in the response
 Guidelines:
-1. Address ${userName || "the user"} warmly and naturally when appropriate.
-2. Use clean, standard Markdown for formatting (headings, bullet points, bold text, code blocks).
-3. Be truthful, concise, and direct. Do not introduce false facts.
-4. Integrate past context and retrieved facts naturally without explicitly repeating raw system headers.
+1. Use clean, standard Markdown for formatting (headings, bullet points, bold text, code blocks).
+2. Be truthful, concise, and direct. Do not introduce false facts.
+3. Integrate past context and retrieved facts naturally without explicitly repeating raw system headers.
 </system_identity>\n`;
-
-  if (userProfile) {
-    systemPrompt += `\n<user_profile>
-Name: ${userName}
-Email: ${userProfile.email || "N/A"}
-</user_profile>\n`;
-  }
 
   if (semanticContext && semanticContext.length > 0) {
     const formattedMemory = semanticContext
