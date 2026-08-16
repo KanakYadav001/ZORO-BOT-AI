@@ -5,10 +5,41 @@ const chatModel = require("../models/chat.model");
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const { CreateEmbedding } = require("../service/ai.service");
+const { searchWebContext } = require("../service/tavily.service");
 const {
   uploadToPinecone,
   getContextFromPinecone,
 } = require("../service/pinecone.service");
+
+const WEB_SEARCH_TIMEOUT_MS = 5000;
+
+function shouldUseWebSearch(text = "") {
+  const query = text.toLowerCase();
+  const webKeywords = [
+    "today",
+    "latest",
+    "news",
+    "current",
+    "price",
+    "stock",
+    "weather",
+    "score",
+    "match",
+    "update",
+    "2026",
+  ];
+
+  return webKeywords.some((keyword) => query.includes(keyword));
+}
+
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([
+    promise,
+    new Promise((resolve) => {
+      setTimeout(() => resolve(fallback), ms);
+    }),
+  ]);
+}
 
 function setupSocketServer(server) {
   const io = socketIo(server, {
@@ -87,6 +118,13 @@ function setupSocketServer(server) {
           .lean();
 
         const userMessageEmbeddingPromise = CreateEmbedding(msg.data);
+        const webContextPromise = shouldUseWebSearch(msg.data)
+          ? withTimeout(
+              searchWebContext(msg.data, 3),
+              WEB_SEARCH_TIMEOUT_MS,
+              [],
+            )
+          : Promise.resolve([]);
 
         // Build context as soon as embedding is ready.
         const previousContextPromise = userMessageEmbeddingPromise.then(
@@ -112,16 +150,24 @@ function setupSocketServer(server) {
           });
 
         // Wait only for data required to generate the model response.
-        const [previousContext, userProfile] = await Promise.all([
+        const [previousContext, userProfile, webContext] = await Promise.all([
           previousContextPromise,
           userProfilePromise,
+          webContextPromise,
         ]);
 
-        // Get response from Groq using context + User Profile
+        if (shouldUseWebSearch(msg.data)) {
+          console.log(
+            `Web search context items: ${webContext.length} for query: ${msg.data}`,
+          );
+        }
+
+        // Get response from Groq using memory context + profile + optional web context.
         const response = await getGroqChatCompletion(
           msg,
           previousContext,
           userProfile,
+          webContext,
         );
 
         // Respond to client immediately after model output is ready.

@@ -1,114 +1,103 @@
-# 🚀 Zoro AI - Real-Time RAG Chat Platform
+# Zoro AI
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+Zoro AI is a full-stack real-time AI chat application.
 
-Zoro AI is a full-stack real-time chat application with Retrieval-Augmented Generation (RAG) using Pinecone and Groq, WebSocket streaming via Socket.IO, background email notifications, and a lightweight React + Tailwind UI.
+It includes:
+- JWT authentication
+- Socket.IO real-time chat
+- RAG memory with Pinecone
+- Groq chat completion
+- Google embeddings
+- Tavily web search for fresh context
+- React + Vite frontend UI
 
----
+## Tech Stack
 
-## Quick overview
+- Frontend: React, Vite, Tailwind CSS, Framer Motion, Socket.IO client
+- Backend: Node.js, Express, Socket.IO, MongoDB (Mongoose)
+- AI: Groq SDK, Google GenAI embeddings
+- Retrieval: Pinecone vector database
+- Web context: Tavily search API
+- Mail: Nodemailer (Gmail OAuth2)
 
-- Real-time chat via Socket.IO; server emits `response` and client emits `message` events.
-- RAG using Pinecone embeddings + Groq LLM for context-aware replies.
-- Welcome/login emails via Nodemailer (invoked directly by the server; no message queue).
-- Auth using JWT; server sets an `token` cookie and also returns the token in responses.
+## Project Structure
 
----
-
-## Tech stack
-
-- Frontend: React 19, Vite, Tailwind CSS, Framer Motion, lucide-react, socket.io-client
--- Backend: Node.js, Express 5, Socket.IO, Mongoose (MongoDB), JWT, Nodemailer (no message queue)
-- AI: Groq SDK (`groq-sdk`) and Google GenAI for embeddings
-- Vector DB: Pinecone (`@pinecone-database/pinecone`)
-
----
-
-## Repository structure
-
-See the main areas of the project:
-
-```
-Zoro-Ai-New/
-├── backend/
-│   ├── server.js                 # HTTP & Socket.IO server entry
-│   ├── package.json
-│   └── src/
-│       ├── app.js                # Express app & route mounting
-│       ├── borker/               # Email handlers (listener.js) — invoked directly (no message queue)
-│       │   └── listener.js       # Email handlers
-│       ├── controller/           # `user.controller.js`, `chat.controller.js`
-│       ├── db/                   # MongoDB connection (`db.js`)
-│       ├── middleware/           # `auth.middleware.js`
-│       ├── models/               # Mongoose schemas for users, chats, messages
-│       ├── routers/              # `user.router.js`, `chat.router.js`
-│       ├── service/              # `ai.service.js`, `pinecone.service.js`, `mail.service.js`
-│       └── socket/               # `socket.server.js` (Socket.IO handlers)
-├── frontend/
-│   ├── index.html
-│   ├── package.json
-│   └── src/
-│       ├── main.jsx
-│       ├── App.jsx
-│       ├── components/           # AuthPage, ChatInterface, Sidebar, UserProfilePage
-│       └── services/             # API client used by the UI
-└── README.md
+```text
+ZORO-BOT-AI/
+	backend/
+		server.js
+		package.json
+		src/
+			app.js
+			borker/
+			controller/
+			db/
+			middleware/
+			models/
+			routers/
+			service/
+			socket/
+	frontend/
+		package.json
+		vite.config.js
+		src/
+			App.jsx
+			components/
+			services/
+	README.md
 ```
 
----
+## Environment Setup
 
-## Environment variables
+Create these env files before running the app.
 
-Create a `.env` file inside the `backend/` folder with the values below. These are read by the server and the services under `src/service/`.
+### 1) Backend env file
 
-```
-# Server
+Create [backend/.env](backend/.env):
+
+```env
 PORT=3000
-FRONTEND_URL=https://zoro-bot-ai.vercel.app
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 
-# MongoDB
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/ZORO-AI
-
-# Auth
-JWT_SECRET=your_super_secret_jwt_key
-
-# Groq & Google GenAI (used for chat completion and embeddings)
 GROQ_API_KEY=your_groq_api_key
 GOOGLE_GENAI_API_KEY=your_google_genai_api_key
 
-# Pinecone
 PINECONE_API_KEY=your_pinecone_api_key
 PINECONE_INDEX_NAME=your_pinecone_index_name
 
-# (No RabbitMQ required)
+TAVILY_API_KEY=your_tavily_api_key
 
-# Email (Gmail OAuth2 flow)
-EMAIL_USER=your-email@gmail.com
+EMAIL_USER=your_email@gmail.com
 CLIENT_ID=your_google_client_id
 CLIENT_SECRET=your_google_client_secret
 REFRESH_TOKEN=your_google_refresh_token
 ```
 
-Notes:
-- `ai.service.js` requires both `GROQ_API_KEY` and `GOOGLE_GENAI_API_KEY` (embeddings + Groq chat calls).
-- `pinecone.service.js` uses `PINECONE_API_KEY` and `PINECONE_INDEX_NAME`.
+### 2) Frontend env file
 
----
+Create [frontend/.env](frontend/.env):
 
-## Running the project (local)
+```env
+VITE_BACKEND_URL=http://localhost:3000/api
+VITE_SOCKET_URL=http://localhost:3000
+```
 
-1) Backend
+## Run Locally
+
+Open two terminals.
+
+### Terminal 1: Backend
 
 ```bash
 cd backend
 npm install
-# Start the server directly
 node server.js
 ```
 
-The server listens on `http://localhost:3000` by default (or `PORT`).
+Backend runs on `http://localhost:3000` by default.
 
-2) Frontend
+### Terminal 2: Frontend
 
 ```bash
 cd frontend
@@ -116,47 +105,53 @@ npm install
 npm run dev
 ```
 
-The frontend runs with Vite (default `http://localhost:5173`). The frontend expects a `VITE_SOCKET_URL` environment variable during build/dev that points to your backend Socket.IO endpoint.
+Frontend runs on Vite (usually `http://localhost:5173`).
 
----
+## API Routes
 
-## API endpoints (backend)
+Base URL: `/api`
 
-Auth (`/api/auth`)
+Auth routes:
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/logout`
+- `GET /auth/me`
 
--- `POST /api/auth/register` — Register a new user (expects `name`, `email`, `password`) and sends a welcome email via the mail service.
-- `POST /api/auth/login` — Login with `email` and `password`. Server sets an HTTP-only `token` cookie and returns a token in the response.
-- `POST /api/auth/logout` — Clears the auth cookie.
-- `GET /api/auth/me` — Returns current user profile (protected route).
+Chat routes:
+- `POST /chat/create`
+- `GET /chat/get`
+- `DELETE /chat/delete/:chatId`
+- `GET /chat/messages/:chatId`
 
-Chat (`/api/chat`)
+## Socket Events
 
-- `POST /api/chat/create` — Create a new chat (protected).
-- `GET /api/chat/get` — Get all chats for the authenticated user.
-- `DELETE /api/chat/delete/:chatId` — Delete a specific chat and its messages.
-- `GET /api/chat/messages/:chatId` — Get messages for a chat.
+- Client emits `message` with payload:
 
-All protected endpoints use the `auth.middleware.js` middleware which expects a valid JWT (the frontend stores a token and also relies on the cookie).
+```json
+{ "chatId": "<chat-id>", "data": "user message" }
+```
 
----
+- Server emits `response` with assistant text.
 
-## Socket.IO events
+Socket auth uses JWT token passed in query during connection.
 
-- Client emits: `message` — payload: `{ chatId, data }` (server saves the user message, creates embeddings, queries Pinecone for context, calls the LLM, streams back a `response`, and stores the assistant reply).
-- Server emits: `response` — payload: assistant reply (string).
+## Tavily Integration (Web Context)
 
-Authentication: the Socket.IO connection is authorized using a JWT passed in the socket query (`token`). If missing/invalid, connection is rejected.
+When the user asks a real-time type query (example: latest news, today updates, scores, weather), backend can fetch web context from Tavily and pass it to the model.
 
----
+Important notes:
+- Tavily data is optional and timeout-protected.
+- If Tavily is slow or unavailable, chat still works with normal RAG context.
 
-## Notes & gotchas
+## Troubleshooting
 
-- Backend `package.json` currently does not include a `dev` script; run `node server.js` or add your own script if you prefer.
-- Frontend requires `VITE_SOCKET_URL` when running locally — set it to `http://localhost:3000` (or your backend host) in a `.env` used by Vite.
-- Emails are sent via Nodemailer with OAuth2 credentials — verify `CLIENT_ID`, `CLIENT_SECRET`, and `REFRESH_TOKEN` are valid for the `EMAIL_USER` account.
+- If frontend crashes at startup, check [frontend/.env](frontend/.env) values for `VITE_BACKEND_URL` and `VITE_SOCKET_URL`.
+- If socket is not connecting, verify backend is running and token is valid.
+- If AI reply is slow, check external API latency (Groq, Google embeddings, Pinecone, Tavily).
+- If web/news answers are missing, confirm `TAVILY_API_KEY` is valid in [backend/.env](backend/.env).
 
----
+## Security Note
 
-## License
+Do not commit real secrets in env files.
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+If any key is exposed publicly, rotate it immediately.
