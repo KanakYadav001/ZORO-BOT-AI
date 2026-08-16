@@ -69,7 +69,11 @@ export default function Sidebar({
               <button
                 onClick={onToggleTheme}
                 title="Toggle Theme"
-                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                  theme === 'dark'
+                    ? 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'
+                    : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
+                }`}
               >
                 {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
               </button>
@@ -115,7 +119,9 @@ export default function Sidebar({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                className={`absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 ${
+                  theme === 'dark' ? 'hover:text-zinc-300' : 'hover:text-zinc-800'
+                }`}
               >
                 <X size={12} />
               </button>
@@ -203,7 +209,9 @@ export default function Sidebar({
             <button
               onClick={onOpenProfile}
               title="Profile"
-              className="text-zinc-400 hover:text-zinc-200 p-1 transition-colors cursor-pointer"
+              className={`p-1 transition-colors cursor-pointer ${
+                theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
             >
               <Settings size={15} />
             </button>

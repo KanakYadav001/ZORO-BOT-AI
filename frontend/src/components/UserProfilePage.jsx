@@ -48,7 +48,11 @@ export default function UserProfilePage({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors cursor-pointer"
+            className={`absolute top-4 right-4 p-1 rounded-lg transition-colors cursor-pointer ${
+              theme === 'dark'
+                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
+            }`}
           >
             <X size={16} />
           </button>
@@ -73,7 +77,7 @@ export default function UserProfilePage({
                 <MessageSquare size={14} />
                 <span>Conversations</span>
               </div>
-              <span className="font-semibold text-zinc-200">{chatCount}</span>
+              <span className={`font-semibold ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-900'}`}>{chatCount}</span>
             </div>
 
             <div className="flex items-center justify-between py-1 border-b border-inherit">
@@ -81,7 +85,7 @@ export default function UserProfilePage({
                 <Calendar size={14} />
                 <span>Member since</span>
               </div>
-              <span className="font-medium text-zinc-200">{memberSince}</span>
+              <span className={`font-medium ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-900'}`}>{memberSince}</span>
             </div>
 
             <div className="flex items-center justify-between py-1">

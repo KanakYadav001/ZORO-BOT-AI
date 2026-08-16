@@ -196,7 +196,9 @@ export default function ChatInterface({
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="text-zinc-400 hover:text-zinc-100 cursor-pointer transition-colors"
+            className={`cursor-pointer transition-colors ${
+              theme === 'dark' ? 'text-zinc-400 hover:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900'
+            }`}
           >
             <Menu size={19} />
           </button>
@@ -208,7 +210,9 @@ export default function ChatInterface({
 
         <button
           onClick={onToggleTheme}
-          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer"
+          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+            theme === 'dark' ? 'text-zinc-400 hover:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900'
+          }`}
         >
           {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
@@ -219,10 +223,14 @@ export default function ChatInterface({
         {!activeChat ? (
           /* Empty state - No active chat */
           <div className="my-auto text-center max-w-sm p-6 select-none">
-            <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mb-4 mx-auto text-zinc-100">
+            <div className={`w-12 h-12 rounded-xl border flex items-center justify-center mb-4 mx-auto ${
+              theme === 'dark'
+                ? 'bg-zinc-800 border-zinc-700 text-zinc-100'
+                : 'bg-white border-zinc-200 text-zinc-900'
+            }`}>
               <Bot size={24} />
             </div>
-            <h2 className="text-base font-semibold mb-1.5 text-zinc-100">
+            <h2 className={`text-base font-semibold mb-1.5 ${theme === 'dark' ? 'text-zinc-100' : 'text-zinc-900'}`}>
               Select or start a chat
             </h2>
             <button
@@ -246,7 +254,7 @@ export default function ChatInterface({
         ) : messages.length === 0 ? (
           /* Clean Welcome View */
           <div className="my-auto text-center max-w-xl w-full p-4 md:p-6 select-none">
-            <h1 className="text-xl font-semibold text-zinc-100 mb-6">
+            <h1 className={`text-xl font-semibold mb-6 ${theme === 'dark' ? 'text-zinc-100' : 'text-zinc-900'}`}>
               How can I help you today, {userFirstName}?
             </h1>
 
@@ -265,7 +273,9 @@ export default function ChatInterface({
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <IconComponent size={15} className="text-zinc-400" />
-                      <span className="text-xs font-medium text-zinc-200">{prompt.title}</span>
+                      <span className={`text-xs font-medium ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}`}>
+                        {prompt.title}
+                      </span>
                     </div>
                     <p className="text-[11px] text-zinc-400 leading-normal">{prompt.desc}</p>
                   </div>
@@ -315,10 +325,14 @@ export default function ChatInterface({
 
                       {/* Action Bar for AI */}
                       {!isUser && (
-                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-zinc-800/80 text-[11px] text-zinc-500">
+                        <div className={`flex items-center justify-between mt-3 pt-2 border-t text-[11px] text-zinc-500 ${
+                          theme === 'dark' ? 'border-zinc-800/80' : 'border-zinc-200'
+                        }`}>
                           <button
                             onClick={() => handleCopy(msg.content, index)}
-                            className="flex items-center gap-1 hover:text-zinc-300 transition-colors cursor-pointer"
+                            className={`flex items-center gap-1 transition-colors cursor-pointer ${
+                              theme === 'dark' ? 'hover:text-zinc-300' : 'hover:text-zinc-700'
+                            }`}
                           >
                             {copiedIndex === index ? (
                               <>
@@ -336,7 +350,9 @@ export default function ChatInterface({
                           {index === messages.length - 1 && (
                             <button
                               onClick={handleRegenerate}
-                              className="flex items-center gap-1 hover:text-zinc-300 transition-colors cursor-pointer"
+                              className={`flex items-center gap-1 transition-colors cursor-pointer ${
+                                theme === 'dark' ? 'hover:text-zinc-300' : 'hover:text-zinc-700'
+                              }`}
                             >
                               <RotateCcw size={12} />
                               <span>Retry</span>
@@ -396,7 +412,9 @@ export default function ChatInterface({
                   }
                 }}
                 placeholder="Ask Zoro AI..."
-                className="w-full pl-4 pr-20 py-3 text-xs bg-transparent outline-none resize-none max-h-32 leading-relaxed text-zinc-100 placeholder:text-zinc-500"
+                className={`w-full pl-4 pr-20 py-3 text-xs bg-transparent outline-none resize-none max-h-32 leading-relaxed ${
+                  theme === 'dark' ? 'text-zinc-100 placeholder:text-zinc-500' : 'text-zinc-900 placeholder:text-zinc-400'
+                }`}
               />
 
               <div className="absolute right-2.5 bottom-2 flex items-center gap-1">
@@ -406,7 +424,9 @@ export default function ChatInterface({
                   className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all ${
                     input.trim() && !isTyping
                       ? 'bg-zinc-100 text-zinc-900 cursor-pointer shadow-xs hover:bg-white'
-                      : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                      : theme === 'dark'
+                        ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                        : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
                   }`}
                 >
                   <ArrowUp size={15} />
