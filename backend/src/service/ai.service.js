@@ -124,7 +124,7 @@ Integrate these facts directly into your answer if relevant, citing source names
     content: currentQuery,
   });
 
-  const modelName = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+  const modelName = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 
   try {
     const chatCompletion = await groq.chat.completions.create({
@@ -139,10 +139,10 @@ Integrate these facts directly into your answer if relevant, citing source names
   } catch (error) {
     console.error(`Error with primary model (${modelName}):`, error?.message || error);
     try {
-      console.warn("Attempting fallback with llama-3.1-8b-instant...");
+      console.warn("Attempting fallback with openai/gpt-oss-120b...");
       const fallbackCompletion = await groq.chat.completions.create({
         messages: messages,
-        model: "llama-3.1-8b-instant",
+        model: "openai/gpt-oss-120b",
         temperature: 0.6,
         max_tokens: 2048,
       });
